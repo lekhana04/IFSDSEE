@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Zoo Population Simulation</title>
+    <script src="https://unpkg.com/react/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone/babel.min.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+      class Animal {
+        constructor(species, initialPopulation, birthRate, deathRate) {
+          this.species = species;
+          this.population = initialPopulation;
+          this.birthRate = birthRate;
+          this.deathRate = deathRate;
+        }
+        calculatePopulationAfterYears(years) {
+          let population = this.population;
+          for (let i = 0; i < years; i++) {
+            population += population * this.birthRate - population * this.deathRate;
+          }
+          return population;
+        }
+      }
+
+      class Zoo {
+        constructor() {
+          this.animals = [];
+        }
+
+        addAnimal(animal) {
+          this.animals.push(animal);
+        }
+
+        calculateTotalPopulationAfterYears(years) {
+          let totalPopulation = 0;
+          for (let animal of this.animals) {
+            totalPopulation += animal.calculatePopulationAfterYears(years);
+          }
+          return totalPopulation;
+        }
+      }
+
+      class PopulationSimulation extends React.Component {
+        constructor(props) {
+          super(props);
+          this.state = {
+            zoo: null,
+            years: 0,
+            totalPopulation: 0,
+          };
+        }
+
+        handleInputChange = (event) => {
+          this.setState({ years: parseInt(event.target.value) });
+        };
+
+        handleAddAnimal = () => {
+          const { zoo } = this.state;
+
+          const species = prompt(`Enter the species of the animal:`);
+          const initialPopulation = parseInt(prompt(`Enter the initial population of ${species}:`));
+          const birthRate = parseFloat(prompt(`Enter the birth rate of ${species} (e.g., 0.1 for 10%):`));
+          const deathRate = parseFloat(prompt(`Enter the death rate of ${species} (e.g., 0.05 for 5%):`));
+
+          const animal = new Animal(species, initialPopulation, birthRate, deathRate);
+          zoo.addAnimal(animal);
+
+          this.setState({ zoo });
+        };
+
+        handleSimulation = () => {
+          const { zoo, years } = this.state;
+          const totalPopulation = zoo.calculateTotalPopulationAfterYears(years);
+          this.setState({ totalPopulation });
+        };
+
+        render() {
+          const { years, totalPopulation } = this.state;
+
+          return (
+            <div>
+              <h2>Zoo Population Simulation</h2>
+
+              <div>
+                <label>Years:</label>
+                <input type="number" value={years} onChange={this.handleInputChange} />
+              </div>
+
+              <button onClick={this.handleAddAnimal}>Add Animal</button>
+              <button onClick={this.handleSimulation}>Run Simulation</button>
+
+              <p>Total population after {years} years: {totalPopulation}</p>
+            </div>
+          );
+        }
+      }
+
+      ReactDOM.render(<PopulationSimulation />, document.getElementById("root"));
+    </script>
+  </body>
+</html>
